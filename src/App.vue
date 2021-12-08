@@ -1,7 +1,14 @@
 <template>
   <div class="app">
     <h1 class="title">🦊 Choose your favorite foxes! 🦊</h1>
-    <img alt="So floofy!" class="card" :src="currentFoxUrl" />
+    <transition name="fade">
+      <img
+        v-if="currentFoxUrl"
+        alt="So floofy!"
+        class="card"
+        :src="currentFoxUrl"
+      />
+    </transition>
     <button @click="addFave" :disabled="isAlreadyInFavorites" class="fav">
       Fave
     </button>
@@ -9,22 +16,29 @@
 
     <section class="favorites">
       <h2>Favorite Floofs</h2>
-      <ul class="favorites-list">
+      <transition-group
+        class="favorites-listwrap favorites-list"
+        name="slide"
+        tag="ul"
+      >
         <li
           v-for="(floof, index) in favorites"
           :key="floof"
           class="favorites-item"
         >
-          <img alt="nice fox" :src="floof" class="favorites-img" />
-          <button @click="removeFave(index)" class="remove">Remove</button>
+          <appFox :fox="floof" @remove="removeFave(index)"></appFox>
         </li>
-      </ul>
+      </transition-group>
     </section>
   </div>
 </template>
 
 <script>
+import Fox from "./components/Fox.vue";
 export default {
+  components: {
+    appFox: Fox,
+  },
   data() {
     return {
       currentFoxUrl: null,
@@ -38,6 +52,7 @@ export default {
   },
   methods: {
     loadFox: async function () {
+      this.currentFoxUrl = "";
       const response = await fetch("https://randomfox.ca/floof/");
       const foxData = await response.json();
       this.currentFoxUrl = foxData.image;
@@ -172,5 +187,32 @@ h2 {
   background: url("https://github.com/FrontEndFoxes/curriculum/blob/main/workshops/vue/minis/images/x.png?raw=true")
     #F44F63 center no-repeat;
   background-size: 10px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-enter,
+.slide-leave-to {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
+.slide-leave-active {
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.slide-move {
+  transition: transform 0.5s;
 }
 </style>
